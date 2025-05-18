@@ -1,0 +1,23 @@
+# Node modules
+server/node_modules
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Environment variables
+server/.env
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# IDE-specific
+.vscode/
+.idea/
+
+
+
+# Coverage reports (if using testing tools like Jest)
+coverage/
