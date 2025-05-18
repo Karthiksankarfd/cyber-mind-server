@@ -14,7 +14,8 @@ connectToDb()
 app.use(bodyParser.json()); // Parses JSON requests
 app.use(bodyParser.urlencoded({ extended: true })); // Parses URL-encoded data
 app.use(cors({
-    origin : ["http://localhost:5173" , "https://cybermindclient.vercel.app/" , "https://cybermindclient-karthiksankarfds-projects.vercel.app/" ,"https://cyber-mind-server-1.onrender.com/"]
+    origin : ["https://cybermindclient.vercel.app/" ,"http://localhost:5173/"],
+    allowedHeaders: ["Content-Type" , ],
 }))
 
 
