@@ -14,9 +14,10 @@ connectToDb()
 app.use(bodyParser.json()); // Parses JSON requests
 app.use(bodyParser.urlencoded({ extended: true })); // Parses URL-encoded data
 app.use(cors({
-    origin : ["https://cybermindclient.vercel.app/" ,"http://localhost:5173/"],
-    allowedHeaders: ["Content-Type" , ],
-}))
+    origin : ["https://cybermindclient.vercel.app", "http://localhost:5173"],
+    credentials: true,
+}));
+
 
 
 app.use("/api" , allJobs)
