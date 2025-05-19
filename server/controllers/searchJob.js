@@ -1,33 +1,56 @@
 const Job = require("../modals/jobModal");
 
 const searchJob = async (req, res) => {
-    const keyword = req.query.keyword;
-    const location = req.query.location;
-    const companyname = req.query.companyname;
-    const jobtype = req.query.jobtype;
-    console.log(`Search API hit with keyword: "${keyword}"`);
+  const { keyword = "", jobType, minSalary, maxSalary } = req.query;
 
-    try {
-        const jobs = await Job.find({
-            // jobTitle: { $regex: keyword, $options: 'i' }
-              $or: [
-            { jobTitle: { $regex: keyword, $options: 'i' } },
-            { location: { $regex: location || keyword, $options: 'i' } },
-            { companyName: { $regex:  companyname || keyword, $options: 'i' } },
-            { jobType: { $regex: jobtype || keyword , $options: 'i' } }
-            ]
-        });
+  console.log(`Search API hit with:`, req.query);
 
-        if (jobs.length === 0) {
-            return res.status(401).json({ msg: "No results found for the search" });
-        }
+  try {
+    const searchQuery = {
+      $and: [],
+    };
 
-        console.log(jobs);
-        return res.status(200).json({ msg: "Jobs found", jobs });
-    } catch (e) {
-        console.error("Error searching data:", e);
-        return res.status(500).json({ msg: "Error searching data" });
+    // Keyword search across multiple fields
+    if (keyword) {
+      searchQuery.$and.push({
+        $or: [
+          { jobTitle: { $regex: keyword, $options: "i" } },
+          { location: { $regex: keyword, $options: "i" } },
+          { companyName: { $regex: keyword, $options: "i" } },
+          { jobType: { $regex: keyword, $options: "i" } },
+        ],
+      });
     }
+
+    // Filter by jobType if provided
+    if (jobType) {
+      searchQuery.$and.push({ jobType: { $regex: jobType, $options: "i" } });
+    }
+
+    // Filter by salary range if both min and/or max provided
+    if (minSalary || maxSalary) {
+      const salaryFilter = {};
+      if (minSalary) salaryFilter.maxSalary = { $gte: Number(minSalary) };
+      if (maxSalary) salaryFilter.minSalary = { ...salaryFilter.minSalary, $lte: Number(maxSalary) };
+      searchQuery.$and.push(salaryFilter);
+    }
+
+    // If no filters applied, remove $and to avoid empty filter
+    if (searchQuery.$and.length === 0) {
+      delete searchQuery.$and;
+    }
+
+    const jobs = await Job.find(searchQuery);
+
+    if (jobs.length === 0) {
+      return res.status(404).json({ msg: "No results found for the search." });
+    }
+
+    res.status(200).json({ msg: "Jobs found", jobs });
+  } catch (error) {
+    console.error("Error searching jobs:", error);
+    res.status(500).json({ msg: "Internal Server Error" });
+  }
 };
 
 module.exports = searchJob;
